@@ -1,0 +1,51 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    // Loom already adds the Fabric/Mojang/Minecraft maven repos automatically.
+    // Add any third-party mod repos here if you depend on other mods.
+}
+
+dependencies {
+    // Minecraft 26.1.2 ships unobfuscated with official (Mojang) names built in,
+    // so unlike pre-26.1 projects there is NO separate `mappings` dependency here.
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+java {
+    // Minecraft 26.1.2 requires Java 25.
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+
+    withSourcesJar()
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 25
+}
+
+// Note: with 26.1+, the mod jar is built directly via the `jar` task
+// (there is no separate `remapJar` task any more, since Minecraft itself
+// is already unobfuscated/official-named).
